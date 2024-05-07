@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import React from "react";
+import * as nsfwjs from 'nsfwjs'
 function App() {
-  const [count, setCount] = useState(0)
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      console.error("No file selected.");
+      return;
+    }
+    const model = await nsfwjs.load('/model/',{ size: 299 })
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+    
+      const img = new Image();
+      img.onload = async () => {
+       
+        const predictions = await model.classify(img)
+
+        console.log("Predictions: ");
+        console.log(predictions);
+      };
+      img.src = event.target?.result as string; 
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <>
+    <div>
+      <h1>Photo Detector</h1>
+      <p>Upload a photo and get the description of the photo</p>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <input type="file" onChange={handleUpload} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
